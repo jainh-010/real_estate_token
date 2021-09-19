@@ -10,7 +10,7 @@ contract Real is ERC20 {
     using SafeMath for uint;
 
     uint pid;
-    address propertyowner;
+    address public propertyowner;
     string propertname;
     uint  amount;
     
@@ -19,9 +19,6 @@ contract Real is ERC20 {
     address[] public tokenholders;
 
     mapping (address => uint256) public tokens;
-    mapping (address => uint256) public tokensoffered;
-    mapping (address => uint256) public tokensellprice;
-
 
     constructor (uint intialsupply, address _propertyowner, string memory _name ,string memory _token , uint _area)  ERC20(_name,_token) {
         _mint(msg.sender,intialsupply);
@@ -39,7 +36,7 @@ contract Real is ERC20 {
 
 //To add tokenholder
 
-        function addtokenholder(address _tholder)  public   {
+        function addtokenholder(address _tholder)  public   onlyowner {
             (bool _istholder, ) = istokenholder(_tholder);
             if (!_istholder) tokenholders.push(_tholder);
             emit Addedtokenholder(_tholder);
@@ -56,7 +53,7 @@ contract Real is ERC20 {
 
 
 //Function to remove the token holder
-        function removetholder(address _tholder) public  {
+        function removetholder(address _tholder) public  onlyowner {
             (bool _istokenholder, uint256 s) = _istokenholder(_tholder);
             if (_istokenholder){ tokenholders[s] = tokenholders[tokenholders.length - 1];
             tokenholders.pop();
