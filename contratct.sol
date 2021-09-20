@@ -9,9 +9,9 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contr
 contract Real is ERC20 {
     using SafeMath for uint;
 
-    uint pid;
-    address public propertyowner;
-    string propertname;
+   // uint pid;
+    address public owner;
+    //string pname;
     uint  amount;
     
     uint internal accumulated;
@@ -20,50 +20,56 @@ contract Real is ERC20 {
 
     mapping (address => uint256) public tokens;
 
-    constructor (uint intialsupply, address _propertyowner, string memory _name ,string memory _token , uint _area)  ERC20(_name,_token) {
-        _mint(msg.sender,intialsupply);
-        tokens[_propertyowner] = _area; 
-        propertyowner =_propertyowner;
+
+    constructor (address _owner, string memory _name ,string memory _tokenname , uint _area)  ERC20(_name,_tokenname) {
+        _mint(_owner,_area);
+        tokens[_owner] = _area; 
+        owner =_owner;
         }
 
         event Addedtokenholder(address TokenholderAdded);
         event Removedtokenholder( address TokenholderRemoved);
         event TokenTransfer(address from, address to, uint256 tokens);
         
-        function accept ()  external  payable  {
-            accumulated += msg.value;
-            }
-
-//To add tokenholder
-
-        function addtokenholder(address _tholder)  public   onlyowner {
-            (bool _istholder, ) = istokenholder(_tholder);
-            if (!_istholder) tokenholders.push(_tholder);
-            emit Addedtokenholder(_tholder);
-            }
+       modifier onlyOwner {
+      require(msg.sender == owner);
+      _;
+   }
 
 //Check wether someone is token holder
 
-        function istokenholder(address _address) public view returns(uint256) {      
+        function istokenholder(address _address) public view returns(bool , uint256) {      
             for (uint256 s = 0; s < tokenholders.length; s += 1){
-                if (_address == tokenholders[s]) return (s);
+                if (_address == tokenholders[s]) return (true,s);
             }
-        return (0);
-        }       
+        return (false ,0);
+        } 
+
+//To add tokenholder
+
+        function addtokenholder(address _tholder)  public onlyOwner returns (bool)  {
+            (bool _istholder, ) = istokenholder(_tholder);
+            if (!_istholder) tokenholders.push(_tholder);
+            emit Addedtokenholder(_tholder);
+            return true;
+            }
 
 
 //Function to remove the token holder
-        function removetholder(address _tholder) public  onlyowner {
-            (bool _istokenholder, uint256 s) = _istokenholder(_tholder);
-            if (_istokenholder){ tokenholders[s] = tokenholders[tokenholders.length - 1];
+        function removetholder(address _tholder) public onlyOwner {
+            (bool _istholder, uint256 s) = istokenholder(_tholder);
+            if (_istholder)
+            { tokenholders[s] = tokenholders[tokenholders.length - 1];
             tokenholders.pop();
             emit Removedtokenholder(_tholder);
             }
+            
+        }
 
-//Transfering of the tokens 
-        function transfer(address _recipient, uint256 _amount) public  {      
-            require(tokens[msg.sender] >= _amount);
-            tokens[msg.sender] -= _amount;
+//Transfering of  tokens 
+        function ttransfer(address _recipient, uint256 _amount) public  {      
+            require(tokens[owner] >= _amount);
+            tokens[owner] -= _amount;
             tokens[_recipient] += _amount;
             emit TokenTransfer(msg.sender, _recipient, _amount);
             }
