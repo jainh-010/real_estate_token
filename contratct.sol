@@ -13,9 +13,7 @@ contract Real is ERC20 {
     address public owner;
     //string pname;
     uint  amount;
-    
-    uint internal accumulated;
-
+   
     address[] public tokenholders;
 
     mapping (address => uint256) public tokens;
